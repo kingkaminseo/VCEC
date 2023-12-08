@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+    <main class="main">
+        <div class="container">
+            <section class="wrapper">
+                <div class="heading">
+                    <h1 class="text text-large">Sign Up</h1>
+
+                </div>
+                <form name="signin" class="form">
+                    <div class="input-control">
+                        <label for="email" class="input-label" hidden>Email Address</label>
+                        <input type="email" class="input-field"  id="signUpEmail" placeholder="Email Address">
+                    </div>
+                    <div class="input-control">
+                        <label for="password" class="input-label" hidden>Password</label>
+                        <input type="password" name="password"  id="signUpPassword" class="input-field" placeholder="Password">
+                    </div>
+                    <div class="input-control">
+                        <a href="index.html" class="text textlinks2" id="df"></a>
+                        <button type="submit" class="input-submit" id="signUpButton">Sign Up</button>
+                    </div>
+                </form>
+                <div class="striped">
+                    <span class="striped-line"></span>
+                    <span class="striped-text">Or</span>
+                    <span class="striped-line"></span>
+                </div>
+                <div class="method">
+                    <div class="method-control">
+                        </p>
+                        <p style="text-align: center;"><span><a href="login.html" class="text text-links">back: login</a></span></p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.2.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.2.0/firebase-analytics.js";
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+      
+        // Your web app's Firebase configuration
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        const firebaseConfig = {
+          apiKey: "AIzaSyAwPiR5YxqpGdAMZE_ymuQmijf-h3sydPs",
+          authDomain: "easylogin-61f7c.firebaseapp.com",
+          projectId: "easylogin-61f7c",
+          storageBucket: "easylogin-61f7c.appspot.com",
+          messagingSenderId: "735107466118",
+          appId: "1:735107466118:web:c1060dd4aae3c97bf76207",
+          measurementId: "G-999Q9X4TXR"
+        };
+      
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+
+        var elements = document.getElementsByClassName("input-field"); 
+
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.2.0/firebase-auth.js";
+
+        const auth = getAuth();
+
+        document.getElementById('signUpButton').addEventListener('click', (event) => {
+            event.preventDefault()
+            const signUpEmail = document.getElementById('signUpEmail').value
+            const signUpPassword = document.getElementById('signUpPassword').value
+
+            createUserWithEmailAndPassword(auth, signUpEmail, signUpPassword)
+                .then((userCredential) => {
+                    console.log(userCredential)
+                    // Signed in 
+                    const user = userCredential.user;
+                    document.getElementById('df').innerText = 'Done!';
+                    for (var i = 0; i < elements.length; i++) {
+                         elements[i].style.border = "2px solid var(--color-green)";
+                        };
+
+                        df.style.color = 'var(--color-green)'
+                    // ...
+                })
+                .catch((error) => {
+                    console.log('error')
+                    const errorCode = error.code;
+                    const errorMessage = error.message;
+                    // ..
+                    document.getElementById('df').innerText = 'Incorrect!';
+                    for (var i = 0; i < elements.length; i++) {
+                         elements[i].style.border = "2px solid var(--color-red)";
+                        };
+                });          
+        })
+
+
+ 
+
+        console.log('hello world')
+        console.log(app)
+
+
+        /*FireBase -> id:landbeanjooyoung -> easylogin -> 왼쪽에 Authentication -> 기본 회원가입 기능 탑재 확인*/
+      </script>
+</body>
+</html>

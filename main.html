@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>비트코인 실시간 가격 정보</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        h1 { font-size: 2rem; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>비트코인</h1>
+    <p>현재 비트코인 가격: <span id="btc-price">가져오는 중...</span></p>
+<section style="height: 600px;">
+        <canvas id="btc-chart" width="400" height="200"></canvas>
+    </section>
+<section style="display: flex;">ㅁ
+    <h1 id="name" style="flex: 1;">내 자산:</h1>
+    <h1 id="ju" style="flex: 1;"></h1>
+</section>
+    <h1 id="hbtc"></h1>
+    <button type="button" onclick="buy()">사기</button>
+    <button type="button" onclick="sell()">팔기</button>
+    <div id="btcprice" style="display: none;"></div>
+
+    <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+    <script>
+        const websocket = new WebSocket('wss://pubwss.bithumb.com/pub/ws');
+        const btcPriceData = [];
+        let btcPrice = 0; // 전역 변수로 이동
+
+        const ctx = document.getElementById('btc-chart').getContext('2d');
+        let chart = createChart();
+
+        function createChart() {
+            return new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'BTC 가격 (KRW)',
+                        data: [],
+                        borderColor: 'blue',
+                        fill: false,
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: '시간',
+                            },
+                        },
+                        y: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: '가격 (KRW)',
+                            },
+                            stepSize: 100,
+                        },
+                    },
+                },
+            });
+        }
+
+        websocket.onopen = () => {
+            console.log('WebSocket connected');
+            websocket.send(JSON.stringify({
+                type: 'ticker',
+                symbols: ['BTC_KRW'],
+                tickTypes: ['1H']
+            }));
+        };
+
+        websocket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.hasOwnProperty('content') && data.content.tickType === '1H') {
+                btcPrice = data.content.closePrice; // btcPrice 업데이트
+                const currentTime = new Date().toLocaleTimeString();
+
+                btcPriceData.push({ time: currentTime, price: btcPrice });
+
+                chart.data.labels.push(currentTime);
+                chart.data.datasets[0].data.push(btcPrice);
+
+                chart.update();
+
+                document.getElementById('btc-price').textContent = Math.round(btcPrice).toLocaleString() + ' KRW';
+                document.getElementById('hbtc').innerText ='현재: '+ btcPrice + '원'; // 업데이트된 btcPrice 사용
+                document.getElementById('btcprice').innerText=btcPrice;
+            }
+            console.log(btcPrice);
+        };
+
+        websocket.onclose = () => {
+            console.log('WebSocket disconnected');
+        };
+
+        websocket.onerror = (error) => {
+            console.error('WebSocket error:', error);
+        };
+
+        var mymoney = 10000000000000
+        var ju = 0;
+        document.getElementById('name').innerText = '내 자산: ' + mymoney;
+        document.getElementById('ju').innerText = 'BTC: '+ju;
+
+        btcPrice=document.getElementById('btcprice').innerText
+        console.log(btcPrice);
+
+        function buy() {
+            console.log(mymoney);
+            console.log(btcPrice);
+            btcPrice = btcPrice * 1;
+            
+            if(mymoney < btcPrice) {
+                alert('돈이 부족합니다');
+                console.log("돈 부족");
+            } else {
+                mymoney -= btcPrice;
+                ju += 1;
+                document.getElementById('name').innerText = '내 자산: ' + mymoney;
+                document.getElementById('ju').innerText = 'BTC: ' + ju;
+                console.log("돈 있음");
+            }
+        }
+
+        function sell() {
+            btcPrice = btcPrice * 1;
+            mymoney = mymoney * 1;
+            
+            if(ju == 0) {
+                alert('BTC가 부족합니다');
+            } else {
+                ju -= 1;
+                mymoney += btcPrice;
+            
+                document.getElementById('name').innerText = '내 자산: ' + mymoney;
+                document.getElementById('ju').innerText = 'BTC: ' + ju;
+            }
+        }
+    </script>
+    
+</body>
+</html>

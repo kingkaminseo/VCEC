@@ -1,0 +1,31 @@
+#typing-text-container {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    overflow: hidden;
+    font-size: 24px;
+    position: relative;
+    min-height: 60px; /* 텍스트의 최소 높이를 지정합니다 */
+    font-weight: 700;
+}
+
+#typing-text {
+    display: inline;
+    position: relative;
+}
+
+#typing-text::before {
+    content: '|';
+    display: inline-block;
+    position: absolute;
+    top: 0;
+    right: -15px; /* 막대와 텍스트 사이의 간격을 조절합니다 */
+    animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+    50% {
+        opacity: 0;
+    }
+}
+

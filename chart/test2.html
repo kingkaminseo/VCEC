@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethereum Real-time Price Graph</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div id="priceGraph"></div>
+
+    <script>
+        // 그래프 업데이트 및 빗썸 API 요청을 위한 JavaScript 코드를 여기에 추가하세요.
+        // 빗썸 API 엔드포인트
+const apiUrl = 'https://api.bithumb.com/public/ticker/ETH';
+
+// Plotly 그래프 초기화 설정
+const layout = {
+    title: 'Ethereum Real-time Price Graph',
+    xaxis: {
+        title: 'Time'
+    },
+    yaxis: {
+        title: 'Price (KRW)'
+    }
+};
+
+const priceData = {
+    x: [],
+    y: [],
+    type: 'line'
+};
+
+const plotConfig = {
+    responsive: true
+};
+
+// 실시간 가격 그래프 업데이트 함수
+function updatePriceGraph() {
+    // 빗썸 API 호출
+    fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+            // 데이터 업데이트
+            const currentTime = new Date().toLocaleTimeString();
+            priceData.x.push(currentTime);
+            priceData.y.push(parseFloat(data.data.closing_price));
+
+            // 그래프 업데이트
+            Plotly.update('priceGraph', [priceData], layout, plotConfig);
+        })
+        .catch(error => console.error('Error fetching data:', error));
+}
+
+// 초기 그래프 설정
+Plotly.newPlot('priceGraph', [priceData], layout, plotConfig);
+
+// 일정 간격으로 그래프 업데이트
+setInterval(updatePriceGraph, 5000); // 5초마다 업데이트
+
+    </script>
+</body>
+</html>

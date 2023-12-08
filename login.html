@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>가상화폐 실시간 가격 정보</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        h1 { font-size: 2rem; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>가상화폐 실시간 가격 정보</h1>
+    <h2><a href="index.html">시작 페이지로 돌아가기</a></h2>
+    <p>현재 비트코인 가격: <span id="btc-price">가져오는 중...</span></p>
+    <p>현재 이더리움 가격: <span id="eth-price">가져오는 중...</span></p>
+    <section style="height: 600px;">
+        <canvas id="crypto-chart" width="800" height="400"></canvas>
+    </section>
+    <script>
+        const ctx = document.getElementById('crypto-chart').getContext('2d');
+        let chart = createChart();
+
+        function createChart() {
+            return new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'BTC 가격 (KRW)',
+                        data: [],
+                        borderColor: 'blue',
+                        fill: false,
+                    },
+                    {
+                        label: 'ETH 가격 (KRW)',
+                        data: [],
+                        borderColor: 'green',
+                        fill: false,
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                        },
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                callback: function(value, index, values) {
+                                    return value.toLocaleString();
+                                }
+                            },
+                        },
+                    },
+                },
+            });
+        }
+
+        function updateChartData(time, btcPrice, ethPrice) {
+            console.log('Updating chart with:', time, btcPrice, ethPrice);
+            chart.data.labels.push(time);
+            chart.data.datasets[0].data.push(btcPrice);
+            chart.data.datasets[1].data.push(ethPrice);
+
+            if (chart.data.labels.length > 20) {
+                chart.data.labels.shift();
+                chart.data.datasets[0].data.shift();
+                chart.data.datasets[1].data.shift();
+            }
+
+            chart.update();
+        }
+
+        const websocket = new WebSocket('wss://pubwss.bithumb.com/pub/ws');
+
+        websocket.onopen = () => {
+            console.log('WebSocket connected');
+            fetchData(); // 초기 데이터 가져오기
+            setInterval(fetchData, 60000); // 1분 간격으로 주기적으로 데이터 가져오기
+        };
+
+        function fetchData() {
+            websocket.send(JSON.stringify({
+                type: 'ticker',
+                symbols: ['BTC_KRW', 'ETH_KRW'],
+                tickTypes: ['1M']
+            }));
+        }
+
+        websocket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            console.log('Received data:', data);
+
+            if (data.type === 'ticker' && data.content.tickType === '1M') {
+                const btcPrice = data.content.closePrice;
+                const ethPrice = data.content.closePrice;
+
+                const currentTime = new Date().toLocaleTimeString();
+
+                updateChartData(currentTime, btcPrice, ethPrice);
+
+                document.getElementById('btc-price').textContent = Math.round(btcPrice).toLocaleString() + ' KRW';
+                document.getElementById('eth-price').textContent = Math.round(ethPrice).toLocaleString() + ' KRW';
+            }
+        };
+
+        websocket.onclose = () => {
+            console.log('WebSocket disconnected');
+        };
+
+        websocket.onerror = (error) => {
+            console.error('WebSocket error:', error);
+        };
+    </script>
+</body>
+</html>

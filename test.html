@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+  <title>여러 개의 직선 그리기</title>
+  <style>
+    canvas {
+      border: 1px solid #000;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="myCanvas" width="500" height="300"></canvas>
+  <button id="eraseButton">지우개</button>
+  <script>
+    $(document).ready(function () {
+      var canvas = document.getElementById('myCanvas');
+      var ctx = canvas.getContext('2d');
+      var isDrawing = false; // 그리기 중인지 여부를 나타내는 변수
+      var lines = []; // 그린 직선들을 저장할 배열
+
+      // 마우스 클릭 시 시작점 설정
+      $(canvas).on('mousedown', function (e) {
+        isDrawing = true;
+        lines.push({ start: { x: e.clientX - canvas.getBoundingClientRect().left, y: e.clientY - canvas.getBoundingClientRect().top }, end: null });
+      });
+
+      // 마우스 이동 시 실시간으로 선 그리기
+      $(canvas).on('mousemove', function (e) {
+        if (isDrawing) {
+          var currentLine = lines[lines.length - 1];
+          currentLine.end = { x: e.clientX - canvas.getBoundingClientRect().left, y: e.clientY - canvas.getBoundingClientRect().top };
+
+          // 현재까지의 직선들을 그림
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          lines.forEach(function (line) {
+            if (line.end !== null) {
+              ctx.beginPath();
+              ctx.moveTo(line.start.x, line.start.y);
+              ctx.lineTo(line.end.x, line.end.y);
+              ctx.strokeStyle = "#000"; // 검정색으로 설정
+              ctx.stroke();
+            }
+          });
+        }
+      });
+
+      // 마우스 클릭 해제 시 그리기 중지
+      $(canvas).on('mouseup', function () {
+        isDrawing = false;
+      });
+
+      // 마우스가 캔버스를 벗어날 때도 그리기 중지
+      $(canvas).on('mouseout', function () {
+        isDrawing = false;
+      });
+
+      // 지우개 버튼 클릭 시 마지막으로 그려진 직선 지우기
+      $('#eraseButton').on('click', function () {
+        if (lines.length > 0) {
+          lines.pop();
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          lines.forEach(function (line) {
+            if (line.end !== null) {
+              ctx.beginPath();
+              ctx.moveTo(line.start.x, line.start.y);
+              ctx.lineTo(line.end.x, line.end.y);
+              ctx.strokeStyle = "#000"; // 검정색으로 설정
+              ctx.stroke();
+            }
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>
