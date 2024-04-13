@@ -19,7 +19,7 @@
 
     <!-- Custom styles for this template-->
     <link href="css/sb-admin-2.min.css" rel="stylesheet">
-
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 </head>
 
 <body id="page-top">
@@ -359,105 +359,14 @@
                 <div class="container-fluid">
 
                     <!-- Page Heading -->
-                    <h1 class="h3 mb-1 text-gray-800">Other Utilities</h1>
-                    <p class="mb-4">Bootstrap's default utility classes can be found on the official <a
-                            href="https://getbootstrap.com/docs">Bootstrap Documentation</a> page. The custom utilities
-                        below were created to extend this theme past the default utility classes built into Bootstrap's
-                        framework.</p>
+                   
 
-                    <!-- Content Row -->
-                    <div class="row">
+                    <section id="tv_chart_container"></section>
 
-                        <div class="col-lg-6">
 
-                            <!-- Overflow Hidden -->
-                            <div class="card mb-4">
-                                <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Overflow Hidden Utilty</h6>
-                                </div>
-                                <div class="card-body">
-                                    Use <code>.o-hidden</code> to set the overflow property of any element to hidden.
-                                </div>
-                            </div>
 
-                            <!-- Progress Small -->
-                            <div class="card mb-4">
-                                <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Progress Small Utility</h6>
-                                </div>
-                                <div class="card-body">
-                                    <div class="mb-1 small">Normal Progress Bar</div>
-                                    <div class="progress mb-4">
-                                        <div class="progress-bar" role="progressbar" style="width: 75%"
-                                            aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                    <div class="mb-1 small">Small Progress Bar</div>
-                                    <div class="progress progress-sm mb-2">
-                                        <div class="progress-bar" role="progressbar" style="width: 75%"
-                                            aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                    Use the <code>.progress-sm</code> class along with <code>.progress</code>
-                                </div>
-                            </div>
 
-                            <!-- Dropdown No Arrow -->
-                            <div class="card mb-4">
-                                <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Dropdown - No Arrow</h6>
-                                </div>
-                                <div class="card-body">
-                                    <div class="dropdown no-arrow mb-4">
-                                        <button class="btn btn-secondary dropdown-toggle" type="button"
-                                            id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true"
-                                            aria-expanded="false">
-                                            Dropdown (no arrow)
-                                        </button>
-                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                            <a class="dropdown-item" href="#">Action</a>
-                                            <a class="dropdown-item" href="#">Another action</a>
-                                            <a class="dropdown-item" href="#">Something else here</a>
-                                        </div>
-                                    </div>
-                                    Add the <code>.no-arrow</code> class alongside the <code>.dropdown</code>
-                                </div>
-                            </div>
 
-                        </div>
-
-                        <div class="col-lg-6">
-
-                            <!-- Roitation Utilities -->
-                            <div class="card">
-                                <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Rotation Utilities</h6>
-                                </div>
-                                <div class="card-body text-center">
-                                    <div class="bg-primary text-white p-3 rotate-15 d-inline-block my-4">.rotate-15
-                                    </div>
-                                    <hr>
-                                    <div class="bg-primary text-white p-3 rotate-n-15 d-inline-block my-4">.rotate-n-15
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-                <!-- /.container-fluid -->
-
-            </div>
-            <!-- End of Main Content -->
-
-            <!-- Footer -->
-            <footer class="sticky-footer bg-white">
-                <div class="container my-auto">
-                    <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; Your Website 2020</span>
-                    </div>
-                </div>
-            </footer>
             <!-- End of Footer -->
 
         </div>
@@ -500,6 +409,161 @@
 
     <!-- Custom scripts for all pages-->
     <script src="js/sb-admin-2.min.js"></script>
+    <script>
+        const websocket = new WebSocket('wss://pubwss.bithumb.com/pub/ws');
+        let btcPrice = 0;
+    
+        const tvWidget = new TradingView.widget({
+            symbol: 'KRW',
+            fullscreen: true,
+            interval: '1',
+            container_id: "tv_chart_container",
+            datafeed: {
+                onReady: cb => {
+                    cb({
+                        supports_search: true,
+                        supports_group_request: false,
+                        supports_marks: true,
+                        supports_timescale_marks: true,
+                    });
+                },
+                searchSymbols: (userInput, exchange, symbolType, onResultReadyCallback) => {
+                    onResultReadyCallback([]);
+                },
+                resolveSymbol: (symbolName, onSymbolResolvedCallback, onResolveErrorCallback) => {
+                    onSymbolResolvedCallback({
+                        name: symbolName,
+                        ticker: symbolName,
+                        description: symbolName,
+                        type: 'crypto',
+                        session: '24x7',
+                        timezone: 'Asia/Seoul',
+                        ticker: symbolName,
+                        minmov: 1,
+                        pricescale: 100,
+                    });
+                },
+                getBars: (symbolInfo, resolution, from, to, onHistoryCallback, onErrorCallback, firstDataRequest) => {
+                    // 빗썸 API를 통해 실제 캔들 데이터를 가져오는 로직
+                    $.ajax({
+                        url: 'https://api.bithumb.com/public/candlestick/BTC_KRW/' + resolution + '?count=100&from=' + from + '&to=' + to,
+                        type: 'GET',
+                        dataType: 'json',
+                        success: function (data) {
+                            const bars = data.data.map(candle => ({
+                                time: candle['timestamp'],
+                                open: candle['open'],
+                                high: candle['max_price'],
+                                low: candle['min_price'],
+                                close: candle['close'],
+                            }));
+                            onHistoryCallback(bars, { noData: !bars.length });
+                        },
+                        error: function (error) {
+                            console.error('Error fetching candlestick data:', error);
+                            onErrorCallback(error);
+                        }
+                    });
+                },
+            },
+        });
+    
+        websocket.onopen = () => {
+            console.log('WebSocket connected');
+            websocket.send(JSON.stringify({
+                type: 'ticker',
+                symbols: ['BTC_KRW'],
+                tickTypes: ['1H']
+            }));
+        };
+    
+        websocket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.hasOwnProperty('content') && data.content.tickType === '1H') {
+                btcPrice = data.content.closePrice;
+                document.getElementById('btc-price').textContent = Math.round(btcPrice).toLocaleString() + ' KRW';
+            }
+            document.getElementById('btc-price').textContent = Math.round(btcPrice).toLocaleString() + ' KRW';
+                document.getElementById('hbtc').innerText ='현재 BTC가격: '+ btcPrice + '원'; // 업데이트된 btcPrice 사용
+                document.getElementById('btcprice').innerText=btcPrice;
+    
+                number = document.getElementById('number').value
+    
+                result = document.getElementById('result')
+                var newnum = 0
+                newnum = number*btcPrice
+                console.log(number*btcprice)
+                result.innerText = '가격: '+newnum+'원'
+                Changes = document.getElementById('Changes')
+                Changess = mymoney - newnum
+                Changes.innerText = '남은 잔액:'+Changess
+                document.getElementById('count').innerText = '구매갯수: '+number+'개'
+    
+                document.getElementById('btc-price2')
+    
+    
+                
+        };
+    
+        websocket.onclose = () => {
+            console.log('WebSocket disconnected');
+        };
+    
+        websocket.onerror = (error) => {
+            console.error('WebSocket error:', error);
+        };
+    
+        var mymoney = 1000000000
+        var ju = 0;
+        document.getElementById('name').innerText = '내 자산: ' + mymoney+"$";
+        document.getElementById('ju').innerText = 'BTC: '+ju;
+    
+        btcPrice=document.getElementById('btcprice').innerText
+    
+        document.getElementById('nametwo').innerText = document.getElementById('name').innerText;
+    
+    
+    //     number.oninput = function(){
+    //         btcPrice = btcPrice*1;
+    //     result.innerHTML = '구매가격  : ' + number.value*btcPrice;
+    // }
+    
+    function buy() {
+            btcPrice = btcPrice * 1;
+            const orginnumber = document.getElementById('number').value;
+            number = orginnumber*1
+            if(mymoney < btcPrice*number) {
+                alert('돈이 부족합니다');
+                console.log("돈 부족");
+            } else {
+                mymoney -= btcPrice*number;
+                ju += number;
+                document.getElementById('name').innerText = '내 자산: ' + mymoney;
+                document.getElementById('ju').innerText = 'BTC: ' + ju;
+                console.log("돈 있음");
+                document.getElementById('nametwo').innerText = document.getElementById('name').innerText;
+                
+            }
+        }
+    
+        function sell() {
+            btcPrice = btcPrice * 1;
+            mymoney = mymoney * 1;
+            const orginnumber = document.getElementById('number').value;
+            number = orginnumber*1
+            
+            if(ju == 0) {
+                alert('BTC가 부족합니다');
+            } else {
+                ju -= number;
+                mymoney += btcPrice*number;
+            
+                document.getElementById('name').innerText = '내 자산: ' + mymoney;
+                document.getElementById('ju').innerText = 'BTC: ' + ju;
+                document.getElementById('nametwo').innerText = document.getElementById('name').innerText;
+            }
+        }
+    </script>
 
 </body>
 

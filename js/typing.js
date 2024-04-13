@@ -37,4 +37,4 @@ function eraseCharacter() {
     }
 }
 
-typeCharacter(); // 페이지가 로드될 때 타이핑 효과 시작
+typeCharacter();
