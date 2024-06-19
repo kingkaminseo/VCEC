@@ -18,3 +18,8 @@
 3. Bootstrap ( 빠른 웹디자인을 위한 프레임워크 )
 4. canvas API ( 추세선을 그리려고 사용함 )
 5. Chart.js (비트코인 그래프를 그리는데 사용함 )
+
+
+사용한 부트스트랩 템플릿
+- [메인페이지 사용 템플릿]:https://startbootstrap.com/theme/agency
+- [모의투자 전체 디자인 템플릿]:https://startbootstrap.com/theme/sb-admin-2
