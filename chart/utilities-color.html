@@ -456,7 +456,7 @@
 <script>
     const websocket = new WebSocket('wss://pubwss.bithumb.com/pub/ws');
     const btcPriceData = [];
-    let btcPrice = 0; // 전역 변수로 이동
+    let btcPrice = 0;
 
     const ctx = document.getElementById('btc-chart').getContext('2d');
     let chart = createChart();
